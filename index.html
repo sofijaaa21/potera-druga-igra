@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Potera - Igra</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f8f8f8;
+        }
+        .board {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px auto;
+            background-color: black;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .cell {
+            width: 200px;
+            height: 50px;
+            border: 1px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 2px;
+            color: white;
+            font-weight: bold;
+            background-color: darkgray;
+        }
+        .player { background-color: blue; color: white; }
+        .chaser { background-color: red; color: white; }
+        .choices, .controls {
+            margin: 10px;
+        }
+        .controls button {
+            margin: 5px;
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Potera</h1>
+    <div class="choices">
+        <button onclick="setStartPosition('low')">Niža suma</button>
+        <button onclick="setStartPosition('mid')">Srednja suma</button>
+        <button onclick="setStartPosition('high')">Viša suma</button>
+    </div>
+    <div class="board" id="board"></div>
+    <div class="controls">
+        <button onclick="movePlayer()">Pomeraj Igrača</button>
+        <button onclick="moveChaser()">Pomeraj Tragača</button>
+    </div>
+    <script>
+        const boardSize = 8;
+        let playerPosition = 3;
+        let chaserPosition = 0;
+
+        function setStartPosition(choice) {
+            if (choice === 'low') {
+                playerPosition = 4;
+            } else if (choice === 'mid') {
+                playerPosition = 3;
+            } else if (choice === 'high') {
+                playerPosition = 2;
+            }
+            chaserPosition = 0;
+            drawBoard();
+        }
+
+        function drawBoard() {
+            const board = document.getElementById("board");
+            board.innerHTML = "";
+            for (let i = 0; i < boardSize; i++) {
+                let cell = document.createElement("div");
+                cell.classList.add("cell");
+                if (i === playerPosition) cell.classList.add("player");
+                if (i === chaserPosition) cell.classList.add("chaser");
+                board.appendChild(cell);
+            }
+        }
+
+        function movePlayer() {
+            if (playerPosition < boardSize) playerPosition++;
+            drawBoard();
+            checkGameOver();
+        }
+
+        function moveChaser() {
+            if (chaserPosition < boardSize) chaserPosition++;
+            drawBoard();
+            checkGameOver();
+        }
+
+        function checkGameOver() {
+            if (playerPosition === boardSize-1) {
+                alert("Čestitamo! Pobedio si!");
+            } else if (playerPosition === chaserPosition) {
+                alert("Tragač te je uhvatio! Izgubio si.");
+            }
+        }
+
+        drawBoard();
+    </script>
+</body>
+</html>

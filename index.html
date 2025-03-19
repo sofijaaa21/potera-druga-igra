@@ -3,18 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Potera - Igra</title>
+    <title>The Chase - Igra</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             background-color: #f8f8f8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .game-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 50px;
+            margin-top: 20px;
         }
         .board {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin: 20px auto;
             background-color: black;
             padding: 10px;
             border-radius: 10px;
@@ -33,44 +42,69 @@
         }
         .player { background-color: blue; color: white; }
         .chaser { background-color: red; color: white; }
-        .choices, .controls {
-            margin: 10px;
+        .question-box {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            width: 320px;
+            text-align: left;
+            font-size: 18px;
+            font-weight: bold;
+            display: none;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
         }
-        .controls button {
-            margin: 5px;
-            padding: 10px;
+        .question-box button {
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+            padding: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .reveal-button {
+            margin-top: 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
             font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
         }
+        .correct { background-color: green !important; color: white; }
     </style>
 </head>
 <body>
-    <h1>Potera</h1>
+    <h1>The Chase</h1>
     <div class="choices">
         <button onclick="setStartPosition('low')">Niža suma</button>
         <button onclick="setStartPosition('mid')">Srednja suma</button>
         <button onclick="setStartPosition('high')">Viša suma</button>
     </div>
-    <div class="board" id="board"></div>
-    <div class="controls">
-        <button onclick="movePlayer()">Pomeraj Igrača</button>
-        <button onclick="moveChaser()">Pomeraj Tragača</button>
+
+    <div class="game-container">
+        <div class="board" id="board"></div>
+        <div class="question-box" id="questionBox">
+            <p id="questionText"></p>
+            <button onclick="playerAnswer(0)" id="answerA"></button>
+            <button onclick="playerAnswer(1)" id="answerB"></button>
+            <button onclick="playerAnswer(2)" id="answerC"></button>
+            <button class="reveal-button" onclick="revealAnswer()">Prikaži tačan odgovor</button>
+        </div>
     </div>
+    <div class="controls">
+        <button onclick="askQuestion()">Pitanje za Igrača</button>
+        <button onclick="movePlayer()">Pomeri Igrača</button>
+        <button onclick="moveChaser()">Pomeri Tragača</button>
+    </div>
+    <script src="questions.js"></script>
     <script>
         const boardSize = 8;
         let playerPosition = 3;
         let chaserPosition = 0;
-
-        function setStartPosition(choice) {
-            if (choice === 'low') {
-                playerPosition = 4;
-            } else if (choice === 'mid') {
-                playerPosition = 3;
-            } else if (choice === 'high') {
-                playerPosition = 2;
-            }
-            chaserPosition = 0;
-            drawBoard();
-        }
+        let currentQuestion = null;
 
         function drawBoard() {
             const board = document.getElementById("board");
@@ -83,21 +117,52 @@
                 board.appendChild(cell);
             }
         }
+        function setStartPosition(choice) {
+            playerPosition = choice === 'low' ? 4 : choice === 'high' ? 2 : 3;
+            chaserPosition = 0;
+            drawBoard();
+        }
+        function askQuestion() {
+            if (!questions || questions.length === 0) {
+                alert("Pitanja nisu učitana!");
+                return;
+            }
+            const randomIndex = Math.floor(Math.random() * questions.length);
+            currentQuestion = questions[randomIndex];
+
+            document.getElementById("questionText").innerText = currentQuestion.question;
+            document.getElementById("answerA").innerText = currentQuestion.answers[0];
+            document.getElementById("answerB").innerText = currentQuestion.answers[1];
+            document.getElementById("answerC").innerText = currentQuestion.answers[2];
+            document.getElementById("questionBox").style.display = "block";
+        }
+
+        function playerAnswer(choice) {
+            document.querySelectorAll(".question-box button").forEach(btn => btn.classList.remove("correct"));
+            document.getElementById(`answer${choice}`).classList.add("correct");
+        }
+
+        function revealAnswer() {
+            if (!currentQuestion) return;
+            const correctAnswer = currentQuestion.correct;
+            document.querySelectorAll(".question-box button").forEach(btn => btn.classList.remove("correct"));
+            document.getElementById(`answer${correctAnswer}`).classList.add("correct");
+        }
 
         function movePlayer() {
-            if (playerPosition < boardSize) playerPosition++;
+            if (playerPosition < boardSize - 1) playerPosition++;
             drawBoard();
             checkGameOver();
         }
 
         function moveChaser() {
-            if (chaserPosition < boardSize) chaserPosition++;
+            if (chaserPosition < boardSize - 1) chaserPosition++;
             drawBoard();
             checkGameOver();
         }
 
         function checkGameOver() {
-            if (playerPosition === boardSize-1) {
+            if (playerPosition === boardSize - 1) {
                 alert("Čestitamo! Pobedio si!");
             } else if (playerPosition === chaserPosition) {
                 alert("Tragač te je uhvatio! Izgubio si.");
